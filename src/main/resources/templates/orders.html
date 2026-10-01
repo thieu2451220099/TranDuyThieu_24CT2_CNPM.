@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn hàng | Thiệu_shop</title><link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="wrap header-main">
+        <a class="brand" href="/"><span class="brand-mark">T</span><span>Thiệu<span>_shop</span></span></a>
+        <nav class="top-actions simple-actions"><a href="/">Sản phẩm</a><a href="/cart">🛒 Giỏ hàng</a><a href="/logout">Thoát</a></nav>
+    </div>
+</header>
+<main class="wrap page-section">
+    <div class="page-title-row"><div><span class="section-label">ORDER HISTORY</span><h1>Đơn hàng của tôi</h1><p>Theo dõi tình trạng và xem chi tiết các đơn đã đặt.</p></div><a class="back-link" href="/">← Về trang chủ</a></div>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="empty-state box"><div class="empty-icon">📦</div><h2>Bạn chưa có đơn hàng</h2><p>Đơn hàng sau khi đặt thành công sẽ xuất hiện tại đây.</p><a class="primary inline-btn" href="/">Mua sắm ngay</a></div>
+
+    <section class="order-list" th:if="${!#lists.isEmpty(orders)}">
+        <article class="order-card" th:each="o : ${orders}">
+            <div class="order-card-top">
+                <div><span class="order-code">ĐƠN #<span th:text="${o.id}">1</span></span><small th:text="${#temporals.format(o.createdAt,'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</small></div>
+                <span class="status-badge" th:classappend="| status-${#strings.toLowerCase(o.status)}|">
+                    <span th:if="${o.status == 'PENDING'}">🕐 Chờ xác nhận</span>
+                    <span th:if="${o.status == 'CONFIRMED'}">✅ Đã xác nhận</span>
+                    <span th:if="${o.status == 'SHIPPING'}">🚚 Đang giao</span>
+                    <span th:if="${o.status == 'COMPLETED'}">🎉 Hoàn thành</span>
+                    <span th:if="${o.status == 'CANCELLED'}">❌ Đã hủy</span>
+                </span>
+            </div>
+            <div class="order-card-info"><div><small>Địa chỉ nhận hàng</small><p th:text="${o.shippingAddress}">Địa chỉ</p></div><div class="order-total"><small>Tổng tiền</small><strong th:text="${#numbers.formatDecimal(o.total,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong></div></div>
+            <div class="order-card-actions"><a class="outline-btn" th:href="@{'/orders/' + ${o.id}}">Xem chi tiết →</a><form th:if="${o.status == 'PENDING' or o.status == 'CONFIRMED'}" th:action="@{'/orders/' + ${o.id} + '/cancel'}" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');"><button class="danger-btn" type="submit">Hủy đơn</button></form></div>
+        </article>
+    </section>
+</main>
+</body>
+</html>

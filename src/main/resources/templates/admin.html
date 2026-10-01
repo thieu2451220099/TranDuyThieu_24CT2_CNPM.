@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị | Thiệu_shop</title><link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header admin-header"><div class="wrap header-main"><a class="brand" href="/"><span class="brand-mark">T</span><span>Thiệu<span>_shop</span></span></a><span class="admin-title">TRANG QUẢN TRỊ</span><nav class="top-actions simple-actions"><a href="/">Trang bán hàng</a><a href="/logout">Thoát</a></nav></div></header>
+<main class="wrap admin-page">
+    <div class="page-title-row"><div><span class="section-label">ADMIN DASHBOARD</span><h1>Quản trị hệ thống</h1><p>Quản lý sản phẩm, tồn kho và toàn bộ đơn hàng.</p></div></div>
+    <div class="alert error-alert" th:if="${session.adminError}" th:text="${session.adminError}"></div>
+
+    <section class="stats-grid">
+        <div class="stat-card"><span>🕐</span><div><small>Chờ xác nhận</small><strong th:text="${pendingCount}">0</strong></div></div>
+        <div class="stat-card"><span>✅</span><div><small>Đã xác nhận</small><strong th:text="${confirmedCount}">0</strong></div></div>
+        <div class="stat-card"><span>🚚</span><div><small>Đang giao</small><strong th:text="${shippingCount}">0</strong></div></div>
+        <div class="stat-card"><span>🎉</span><div><small>Hoàn thành</small><strong th:text="${completedCount}">0</strong></div></div>
+        <div class="stat-card"><span>❌</span><div><small>Đã hủy</small><strong th:text="${cancelledCount}">0</strong></div></div>
+    </section>
+
+    <section class="box admin-product-box"><div class="section-heading"><div><span class="section-label">PRODUCT MANAGEMENT</span><h2>Thêm sản phẩm</h2></div></div><form action="/admin/products/save" method="post" class="adminform"><input name="name" placeholder="Tên sản phẩm" required><input name="price" type="number" min="0" step="1000" placeholder="Giá (VNĐ)" required><input name="quantity" type="number" min="0" placeholder="Số lượng" required><input name="category" placeholder="Danh mục (Áo, Giày, Phụ kiện...)" required><input name="availableSizes" placeholder="Size: S,M,L,XL hoặc 38,39,40,41..." required><input name="availableColors" placeholder="Màu: Đen,Trắng,Đỏ..." required><input name="image" placeholder="URL ảnh"><input name="description" placeholder="Mô tả"><button class="primary" type="submit">+ Lưu sản phẩm</button></form></section>
+
+    <section class="admin-section"><div class="section-heading"><div><span class="section-label">INVENTORY</span><h2>Sản phẩm</h2></div><span class="product-count" th:text="${products.size()} + ' sản phẩm'">0 sản phẩm</span></div><div class="tablebox"><table class="admin-table"><thead><tr><th>ID</th><th>Sản phẩm</th><th>Danh mục</th><th>Size</th><th>Màu</th><th>Giá</th><th>Tồn kho</th><th>Thao tác</th></tr></thead><tbody><tr th:each="p : ${products}"><td>#<span th:text="${p.id}"></span></td><td><div class="admin-product-name"><img th:src="${p.image}" th:alt="${p.name}"><b th:text="${p.name}">Tên</b></div></td><td th:text="${p.category}">Danh mục</td><td class="variant-admin" th:text="${p.availableSizes}">S,M,L</td><td class="variant-admin" th:text="${p.availableColors}">Đen,Trắng</td><td th:text="${#numbers.formatDecimal(p.price,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</td><td><span class="stock-pill" th:classappend="${p.quantity <= 0 ? ' stock-empty' : (p.quantity <= 5 ? ' stock-low' : '')}" th:text="${p.quantity}">0</span></td><td><form th:action="@{'/admin/products/delete/' + ${p.id}}" method="post" onsubmit="return confirm('Xóa sản phẩm này?');"><button class="danger-btn small-btn" type="submit">Xóa</button></form></td></tr></tbody></table></div></section>
+
+    <section class="admin-section"><div class="section-heading"><div><span class="section-label">ORDER MANAGEMENT</span><h2>Đơn hàng</h2></div><span class="product-count" th:text="${orders.size()} + ' đơn hàng'">0 đơn hàng</span></div><div class="tablebox"><table class="admin-table order-admin-table"><thead><tr><th>Mã</th><th>Khách hàng</th><th>Ngày đặt</th><th>Địa chỉ</th><th>Tổng tiền</th><th>Trạng thái</th><th>Cập nhật</th></tr></thead><tbody><tr th:each="o : ${orders}"><td><a class="order-link" th:href="@{'/admin/orders/' + ${o.id}}">#<span th:text="${o.id}"></span></a></td><td><b th:text="${o.customer.fullName}">Khách</b></td><td th:text="${#temporals.format(o.createdAt,'dd/MM/yyyy HH:mm')}">01/01/2026</td><td class="address-cell" th:text="${o.shippingAddress}">Địa chỉ</td><td><b th:text="${#numbers.formatDecimal(o.total,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</b></td><td><span class="status-badge" th:classappend="| status-${#strings.toLowerCase(o.status)}|"><span th:if="${o.status == 'PENDING'}">🕐 Chờ xác nhận</span><span th:if="${o.status == 'CONFIRMED'}">✅ Đã xác nhận</span><span th:if="${o.status == 'SHIPPING'}">🚚 Đang giao</span><span th:if="${o.status == 'COMPLETED'}">🎉 Hoàn thành</span><span th:if="${o.status == 'CANCELLED'}">❌ Đã hủy</span></span></td><td><form class="status-form" th:action="@{'/admin/orders/' + ${o.id} + '/status'}" method="post"><select name="status"><option value="PENDING" th:selected="${o.status == 'PENDING'}">PENDING</option><option value="CONFIRMED" th:selected="${o.status == 'CONFIRMED'}">CONFIRMED</option><option value="SHIPPING" th:selected="${o.status == 'SHIPPING'}">SHIPPING</option><option value="COMPLETED" th:selected="${o.status == 'COMPLETED'}">COMPLETED</option><option value="CANCELLED" th:selected="${o.status == 'CANCELLED'}">CANCELLED</option></select><button class="primary small-btn" type="submit">Lưu</button></form></td></tr></tbody></table></div></section>
+</main>
+</body>
+</html>

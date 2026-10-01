@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng | Thiệu_shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="wrap header-main">
+        <a class="brand" href="/"><span class="brand-mark">T</span><span>Thiệu<span>_shop</span></span></a>
+        <nav class="top-actions simple-actions">
+            <a href="/">Sản phẩm</a>
+            <a href="/orders">📦 Đơn hàng</a>
+            <a href="/logout">Thoát</a>
+        </nav>
+    </div>
+</header>
+
+<main class="wrap page-section">
+    <div class="page-title-row">
+        <div>
+            <span class="section-label">SHOPPING CART</span>
+            <h1>Giỏ hàng của bạn</h1>
+            <p>Kiểm tra sản phẩm, size, màu và số lượng trước khi đặt hàng.</p>
+        </div>
+        <a class="back-link" href="/">← Tiếp tục mua sắm</a>
+    </div>
+
+    <div class="alert error-alert" th:if="${checkoutError}" th:text="${checkoutError}"></div>
+
+    <div th:if="${#lists.isEmpty(items)}" class="empty-state box">
+        <div class="empty-icon">🛒</div>
+        <h2>Giỏ hàng đang trống</h2>
+        <p>Hãy chọn vài sản phẩm yêu thích để bắt đầu mua sắm.</p>
+        <a class="primary inline-btn" href="/">Khám phá sản phẩm</a>
+    </div>
+
+    <div class="cart-layout" th:if="${!#lists.isEmpty(items)}">
+        <section class="cart-list">
+            <article class="cart-item" th:each="item : ${items}">
+                <img th:src="${item.product.image}" th:alt="${item.product.name}">
+
+                <div class="cart-item-info">
+                    <span class="category" th:text="${item.product.category}">Danh mục</span>
+                    <h3 th:text="${item.product.name}">Sản phẩm</h3>
+                    <p th:text="${item.product.description}">Mô tả</p>
+
+                    <div class="cart-variants">
+                        <span th:if="${item.size != null and !item.size.isBlank()}">
+                            Size: <b th:text="${item.size}">M</b>
+                        </span>
+                        <span th:if="${item.color != null and !item.color.isBlank()}">
+                            Màu: <b th:text="${item.color}">Đen</b>
+                        </span>
+                    </div>
+
+                    <strong th:text="${#numbers.formatDecimal(item.product.price,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong>
+                </div>
+
+                <div class="quantity-control">
+                    <form action="/cart/decrease" method="post">
+                        <input type="hidden" name="key" th:value="${item.key}">
+                        <button type="submit" aria-label="Giảm">−</button>
+                    </form>
+
+                    <span th:text="${item.quantity}">1</span>
+
+                    <form action="/cart/increase" method="post">
+                        <input type="hidden" name="key" th:value="${item.key}">
+                        <button type="submit" aria-label="Tăng">+</button>
+                    </form>
+                </div>
+
+                <div class="cart-item-total"
+                     th:text="${#numbers.formatDecimal(item.subtotal,0,'COMMA',0,'POINT')} + ' ₫'">
+                    0 ₫
+                </div>
+
+                <form action="/cart/remove" method="post">
+                    <input type="hidden" name="key" th:value="${item.key}">
+                    <button class="remove-btn" type="submit">Xóa</button>
+                </form>
+            </article>
+        </section>
+
+        <aside class="checkout-card">
+            <span class="section-label">TỔNG ĐƠN</span>
+
+            <div class="summary-line">
+                <span>Tạm tính</span>
+                <b th:text="${#numbers.formatDecimal(total,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</b>
+            </div>
+
+            <div class="summary-line">
+                <span>Phí giao hàng</span>
+                <b>Miễn phí</b>
+            </div>
+
+            <div class="summary-total">
+                <span>Tổng cộng</span>
+                <strong th:text="${#numbers.formatDecimal(total,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong>
+            </div>
+
+            <form action="/checkout" method="post" class="checkout-form">
+                <label>
+                    Địa chỉ nhận hàng
+                    <input name="address" required placeholder="Số nhà, đường, phường/xã, tỉnh/thành">
+                </label>
+
+                <div class="payment-section">
+                    <div class="payment-title">Phương thức thanh toán</div>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="COD" checked>
+                        <span>💵 <b>Thanh toán khi nhận hàng (COD)</b><small>Thanh toán tiền mặt khi nhận được hàng</small></span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="BANK_TRANSFER">
+                        <span>🏦 <b>Chuyển khoản ngân hàng</b><small>Chuyển khoản trước khi giao hàng</small></span>
+                    </label>
+
+                    <div id="bankInfo" class="bank-info" style="display:none">
+                        <b>Thông tin chuyển khoản</b>
+                        <div class="payment-qr-wrap">
+                            <img class="payment-qr" src="/image/QR%20Thanh%20Toan.png"
+                                 alt="Mã QR thanh toán TPBank">
+                        </div>
+                        <div>🏦 Ngân hàng: <strong>TPBank</strong></div>
+                        <div>💳 Số tài khoản: <strong>57114022006</strong></div>
+                        <div>👤 Chủ tài khoản: <strong>TRẦN DUY THIỆU</strong></div>
+                        <small>Nội dung chuyển khoản: THIEU_SHOP + tên tài khoản</small>
+                    </div>
+                </div>
+
+                <button class="primary checkout-btn" type="submit">Đặt hàng ngay →</button>
+            </form>
+
+            <small class="secure-note">🔒 Đơn hàng được lưu an toàn trong hệ thống.</small>
+        </aside>
+    </div>
+</main>
+<script>
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    const bankInfo = document.getElementById('bankInfo');
+    paymentRadios.forEach(radio => radio.addEventListener('change', () => {
+        bankInfo.style.display = document.querySelector('input[name="paymentMethod"]:checked').value === 'BANK_TRANSFER' ? 'block' : 'none';
+    }));
+</script>
+</body>
+</html>

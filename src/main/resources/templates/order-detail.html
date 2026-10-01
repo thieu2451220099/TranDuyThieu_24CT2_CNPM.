@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chi tiết đơn hàng | Thiệu_shop</title><link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<header class="site-header"><div class="wrap header-main"><a class="brand" href="/"><span class="brand-mark">T</span><span>Thiệu<span>_shop</span></span></a><nav class="top-actions simple-actions"><a href="/">Sản phẩm</a><a href="/cart">🛒 Giỏ hàng</a><a href="/logout">Thoát</a></nav></div></header>
+<main class="wrap page-section">
+    <div class="page-title-row"><div><span class="section-label">ORDER DETAIL</span><h1>Đơn hàng #<span th:text="${order.id}">1</span></h1><p th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</p></div><a class="back-link" href="/orders">← Danh sách đơn hàng</a></div>
+    <div class="alert error-alert" th:if="${orderError}" th:text="${orderError}"></div>
+    <div class="detail-layout">
+        <section class="detail-card">
+            <div class="detail-header"><h2>Sản phẩm đã đặt</h2><span class="status-badge" th:classappend="| status-${#strings.toLowerCase(order.status)}|"><span th:if="${order.status == 'PENDING'}">🕐 Chờ xác nhận</span><span th:if="${order.status == 'CONFIRMED'}">✅ Đã xác nhận</span><span th:if="${order.status == 'SHIPPING'}">🚚 Đang giao</span><span th:if="${order.status == 'COMPLETED'}">🎉 Hoàn thành</span><span th:if="${order.status == 'CANCELLED'}">❌ Đã hủy</span></span></div>
+            <div class="detail-product" th:each="item : ${items}"><img th:src="${item.product.image}" th:alt="${item.product.name}"><div><b th:text="${item.product.name}">Sản phẩm</b><small th:text="|${#numbers.formatDecimal(item.price,0,'COMMA',0,'POINT')} ₫ × ${item.quantity}|">0 ₫ × 1</small><div class="variant-line order-variant"><span th:if="${!#strings.isEmpty(item.size)}">📏 Size: <b th:text="${item.size}">M</b></span><span th:if="${!#strings.isEmpty(item.color)}">🎨 Màu: <b th:text="${item.color}">Đen</b></span></div></div><strong th:text="${#numbers.formatDecimal(item.price * item.quantity,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong></div>
+            <div class="detail-total"><span>Tổng cộng</span><strong th:text="${#numbers.formatDecimal(order.total,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong></div>
+        </section>
+        <aside class="detail-card address-card"><h2>Thông tin giao hàng</h2><div class="info-row"><span>👤 Người nhận</span><b th:text="${order.customer.fullName}">Khách hàng</b></div><div class="info-row"><span>📍 Địa chỉ</span><b th:text="${order.shippingAddress}">Địa chỉ</b></div><div class="info-row"><span>📅 Ngày đặt</span><b th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}">01/01/2026</b></div><div class="timeline"><div class="timeline-step" th:classappend="${order.status != 'CANCELLED' ? 'done' : 'muted'}"><i>1</i><span>Đặt hàng</span></div><div class="timeline-step" th:classappend="${order.status == 'CONFIRMED' or order.status == 'SHIPPING' or order.status == 'COMPLETED' ? 'done' : 'muted'}"><i>2</i><span>Xác nhận</span></div><div class="timeline-step" th:classappend="${order.status == 'SHIPPING' or order.status == 'COMPLETED' ? 'done' : 'muted'}"><i>3</i><span>Đang giao</span></div><div class="timeline-step" th:classappend="${order.status == 'COMPLETED' ? 'done' : 'muted'}"><i>4</i><span>Hoàn thành</span></div></div><div class="cancel-box" th:if="${order.status == 'PENDING' or order.status == 'CONFIRMED'}"><p>Bạn muốn hủy đơn này?</p><form th:action="@{'/orders/' + ${order.id} + '/cancel'}" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');"><button class="danger-btn" type="submit">Hủy đơn hàng</button></form></div></aside>
+    </div>
+</main>
+</body>
+</html>

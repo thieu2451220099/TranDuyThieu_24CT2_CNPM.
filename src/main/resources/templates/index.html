@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiệu_shop | Mua sắm online</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="wrap header-main">
+        <a class="brand" href="/">
+            <span class="brand-mark">T</span>
+            <span>Thiệu<span>_shop</span></span>
+        </a>
+
+        <form class="search" action="/" method="get">
+            <span class="search-icon">⌕</span>
+            <input name="q" th:value="${q}" placeholder="Tìm kiếm sản phẩm bạn yêu thích..." autocomplete="off">
+            <button type="submit">Tìm kiếm</button>
+        </form>
+
+        <nav class="top-actions">
+            <a href="/orders" class="action-link"><span>📦</span><small>Đơn hàng</small></a>
+            <a href="/cart" class="action-link cart-link"><span>🛒</span><small>Giỏ hàng</small></a>
+            <a th:if="${session.user == null}" href="/login" class="login-btn">Đăng nhập</a>
+            <div th:if="${session.user != null}" class="user-menu">
+                <span class="avatar">👤</span>
+                <div><small>Xin chào</small><b th:text="${session.user.fullName}"></b></div>
+                <a href="/logout">Thoát</a>
+            </div>
+            <a th:if="${session.user != null and session.user.role == 'ADMIN'}" href="/admin" class="admin-link">Quản trị</a>
+        </nav>
+    </div>
+    <div class="category-bar">
+        <div class="wrap category-inner">
+            <a href="/" class="category-active">Tất cả sản phẩm</a>
+            <a href="/?q=Thời trang">Thời trang</a>
+            <a href="/?q=Giày">Giày</a>
+            <a href="/?q=Phụ kiện">Phụ kiện</a>
+            <a href="/?q=Điện tử">Điện tử</a>
+            <span class="shipping-note">🚚 Miễn phí giao hàng đơn từ 500.000₫</span>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero-wrap">
+        <div class="wrap hero">
+            <div class="hero-content">
+                <span class="eyebrow">THIỆU_SHOP • MUA SẮM THÔNG MINH</span>
+                <h1>Phong cách của bạn,<br><strong>lựa chọn của bạn.</strong></h1>
+                <p>Khám phá những sản phẩm được chọn lọc kỹ càng với mức giá tốt và trải nghiệm mua sắm đơn giản.</p>
+                <div class="hero-buttons">
+                    <a href="#products" class="hero-btn">Khám phá sản phẩm <span>→</span></a>
+                    <a href="#benefits" class="hero-outline">Vì sao chọn chúng tôi?</a>
+                </div>
+                <div class="hero-stats">
+                    <div><b>100%</b><span>Sản phẩm chính hãng</span></div>
+                    <div><b>24/7</b><span>Hỗ trợ khách hàng</span></div>
+                    <div><b>2-5 ngày</b><span>Giao hàng toàn quốc</span></div>
+                </div>
+            </div>
+            <div class="hero-art">
+                <div class="art-circle circle-one"></div>
+                <div class="art-circle circle-two"></div>
+                <div class="floating-card card-one">✨ <b>Deal hôm nay</b><small>Giá cực tốt</small></div>
+                <div class="floating-card card-two">🛍️ <b>Thêm vào giỏ</b><small>Chỉ vài cú nhấp</small></div>
+                <div class="shopping-bag">T</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="wrap benefits" id="benefits">
+        <div class="benefit"><span>🚚</span><div><b>Giao hàng nhanh</b><small>Toàn quốc, đóng gói cẩn thận</small></div></div>
+        <div class="benefit"><span>🔒</span><div><b>Thanh toán an toàn</b><small>Thông tin của bạn luôn được bảo vệ</small></div></div>
+        <div class="benefit"><span>↩️</span><div><b>Đổi trả dễ dàng</b><small>Hỗ trợ khi sản phẩm có vấn đề</small></div></div>
+        <div class="benefit"><span>💬</span><div><b>Hỗ trợ tận tâm</b><small>Luôn sẵn sàng giải đáp cho bạn</small></div></div>
+    </section>
+
+    <section class="wrap products-section" id="products">
+        <div class="section-heading">
+            <div>
+                <span class="section-label">GỢI Ý CHO BẠN</span>
+                <h2>Sản phẩm nổi bật</h2>
+                <p>Những lựa chọn được yêu thích tại Thiệu_shop</p>
+            </div>
+            <span class="product-count" th:text="${products.size()} + ' sản phẩm'"></span>
+        </div>
+
+        <div class="empty-search" th:if="${#lists.isEmpty(products)}">
+            <div>🔎</div><h3>Không tìm thấy sản phẩm</h3><p>Thử tìm kiếm với từ khóa khác nhé.</p><a href="/">Xem tất cả sản phẩm</a>
+        </div>
+
+        <div class="product-grid">
+            <article class="product-card" th:each="p : ${products}"><a class="product-detail-link" th:href="@{/product/{id}(id=${p.id})}"></a>
+                <div class="product-image">
+                    <img th:src="${p.image}" th:alt="${p.name}">
+                    <span class="product-badge" th:if="${p.quantity > 0}">Còn hàng</span>
+                    <span class="product-badge sold-out" th:if="${p.quantity <= 0}">Hết hàng</span>
+                </div>
+                <div class="product-info">
+                    <span class="category" th:text="${p.category}">Sản phẩm</span>
+                    <h3 th:text="${p.name}">Tên sản phẩm</h3>
+                    <p th:text="${p.description}">Mô tả sản phẩm</p>
+                    <div class="price-row">
+                        <strong th:text="${#numbers.formatDecimal(p.price,0,'COMMA',0,'POINT')} + ' ₫'">0 ₫</strong>
+                        <span>★★★★★</span>
+                    </div>
+                    <div class="stock">Còn <b th:text="${p.quantity}">0</b> sản phẩm</div>
+                    <form th:if="${p.quantity > 0}" th:action="@{'/cart/add/' + ${p.id}}" method="post">
+                        <button class="add-cart" type="submit"><span>🛒</span> Thêm vào giỏ hàng</button>
+                    </form>
+                    <button th:if="${p.quantity <= 0}" class="add-cart disabled" type="button" disabled>Hết hàng</button>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap footer-grid">
+        <div><a class="brand footer-brand" href="/"><span class="brand-mark">T</span><span>Thiệu<span>_shop</span></span></a><p>Góc mua sắm online dành cho những lựa chọn chất lượng và phong cách riêng của bạn.</p></div>
+        <div><h4>Thiệu_shop</h4><a href="/">Trang chủ</a><a href="#products">Sản phẩm</a><a href="/orders">Đơn hàng</a></div>
+        <div><h4>Hỗ trợ</h4><a href="#benefits">Chính sách giao hàng</a><a href="#benefits">Đổi trả sản phẩm</a><a href="#benefits">Thanh toán</a></div>
+        <div><h4>Liên hệ</h4><p>📍 TP Đà Nẵng, Việt Nam</p><p>✉️ support@thieushop.vn</p><p>☎️ 0799801402</p></div>
+    </div>
+    <div class="footer-bottom">© 2026 Thiệu_shop · Spring Boot + MySQL</div>
+</footer>
+</body>
+</html>
